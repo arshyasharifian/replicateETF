@@ -9,14 +9,16 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from math import ceil
 
 class ETFHandler:
-    def _validateETFrequest(self, requestETF):
+    # private function 
+    def _validateETFrequest(self, requestETF: str):
+        """
+        Checks whether the ETF symbol represents a valid page url by visiting the page
+        and returning true if valid URL and false otherwise. Fail is returned when a page
+        not found is parsed in the destination URL.
+        """
         url = f'https://www.barchart.com/stocks/quotes/{requestETF}/constituents?page=all'
-
-        # Loads the ETF constituents page
         browser = WebDriver()
-
         browser.get(url)
-
         time.sleep(10)
 
         try:
@@ -28,11 +30,15 @@ class ETFHandler:
             print(e)
             return True
 
-    # START of PUBLIC Function
-    def getETFTable(self, etfSymbol):
+    def getETFTable(self, etfSymbol: str):
+        """
+        given the etfSymbol value, we open a chrome browser and search for the page
+        if found, we expand the page to include all the equities. Finally, we construct
+        a dictionary where the the key is the stock ticker and the values consist of
+        1, the formal stock name and 2, what percentage the equity consist of in the ETF
+        portfolio
+        """
         url = f'https://www.barchart.com/stocks/quotes/{etfSymbol}/constituents?page=all'
-
-        # Loads the ETF constituents page
         browser = WebDriver()
         browser.get(url)
         try:
@@ -40,22 +46,19 @@ class ETFHandler:
         except Exception as e:
             print(e)
             exit(0)
-
         time.sleep(3)
-        
         # Reads the ETF holdings table
         html = browser.page_source
         soup = BeautifulSoup(html, features="html.parser")
         table = soup.find('table')
-
-        # Reads the holdings table line by line and appends each asset to a dictionary along with the holdings percentage
+        # Reads the holdings table line by line and appends each stock to a dictionary along with the holdings percentage
         asset_dict = {}
         for row in table.select('tr')[1:-1]:
             try:
                 cells = row.select('td')
                 # print(row)
                 symbol = cells[0].get_text().strip()
-                #print(symbol)
+                # print(symbol)
                 name = cells[1].text.strip()
                 celltext = cells[2].get_text().strip()
                 percent = float(celltext.rstrip('%'))
@@ -70,13 +73,26 @@ class ETFHandler:
         return asset_dict
         
     def getAvailableCash(self):
+        """
+        Based on the credentials read through environment variables, we assess the available "cash" in the account.
+        A paper account is also applicable here. In other words, this can be used for testing and does not
+        require actual cash. This is important to determine whether orders can be placed.
+        """
         api = tradeapi.REST()
         account = api.get_account()
         availableCash = account.cash
         return int(float(availableCash))
 
-    def getMimimumDollars(self, etfSymbol):
+    def getMimimumDollars(self, etfSymbol: str):
         # calls get_etf_holdings, must pass in ETF symbol
+        """
+        given the ETF symbol, this determine the minimum amount of dollars to satisfy the Alpaca API
+        requirements for trading stocks, at least $1 of each stock must be purchased. By dividing 1 by
+        the stocks's percentage we calculate the number of dollars needed to buy at least $1 dollar
+        of each stock. We sum this value to calculate the total amount of dollars needed. Finally,
+        we divide the sum by the smallest dollars allocated to a particular stock. This ensures we 
+        will meet the minimum requirements by Alpaca.
+        """
 
         etfAssetDict = self.getETFTable(etfSymbol)
         
@@ -97,47 +113,9 @@ class ETFHandler:
             minimumDollars /= smallestInvestment
         return ceil(minimumDollars)
 
-    def rebalance():
-        '''
-        take the current porfolio
-        determine what is inconsistent with the ETF
-        makes adjustment to sync with ETF changes
-        '''
-
-
-def main():
-
-    myETFHandler = ETFHandler()
-
-    symbol = "VOO"
-    etfAssetDict = myETFHandler.getETFTable(symbol)
-
-    #check if holdings are "fractionable"
-
-    # identify the mimimum amount of purchasing power to build ETF
-    minimumDollars = myETFHandler.getMimimumDollars(symbol)
-
-    # determine whether available cash enough to build ETF
-    if myETFHandler.getAvailableCash() < minimumDollars:
-        print ("Insufficient fund to build ETF")
-    else:
-        investmentAmount = -1
-        while investmentAmount < minimumDollars:
-            investmentAmount = float(input(f"Based on the ETF, please enter a value greater than {minimumDollars} to invest: "))
-        #build Alpaca client
-        api = REST()
-        for key in etfAssetDict.keys():
-            equity = etfAssetDict[key]
-            percent = equity['percent']/100
-            # TODO - should be a separate function to enable retry logic
-            try:
-                orderResponse=api.submit_order(symbol=key, 
-                                notional=investmentAmount*percent, 
-                                side="buy",
-                                type="market")
-                print(orderResponse)
-            except Exception as e:
-                print(e)
-
-if __name__ == "__main__":
-    main()
+        """
+        TODO - create a new function to rebalance portfolio based on ETF changes
+        def rebalance():
+            determine the differences between the user's current portfoilio and current ETF holdings.
+            Buy and sell shares of the user's current portfolio to ensure there are no differences.
+        """

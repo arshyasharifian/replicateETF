@@ -1,0 +1,11 @@
+LICENSE
+README.md
+pyproject.toml
+setup.cfg
+src/replicateETF/__init__.py
+src/replicateETF/scrapeETF.py
+src/replicateETF.egg-info/PKG-INFO
+src/replicateETF.egg-info/SOURCES.txt
+src/replicateETF.egg-info/dependency_links.txt
+src/replicateETF.egg-info/requires.txt
+src/replicateETF.egg-info/top_level.txt

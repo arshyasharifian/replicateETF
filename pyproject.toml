@@ -1,6 +1,6 @@
 [project]
 name = "replicateETF"
-version = "0.0.10"
+version = "0.0.11"
 dependencies = [
     "beautifulsoup4>=4.11.1",
     "alpaca-trade-api>=2.0.0",

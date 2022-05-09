@@ -9,6 +9,11 @@ from selenium.webdriver.chrome.webdriver import WebDriver
 from math import ceil
 
 class ETFHandler:
+    def __init__(self, api_key=None, api_secret=None, base_url='https://paper-api.alpaca.markets'):
+        self.api_key = api_key
+        self.api_secret = api_secret
+        self.base_url = base_url
+    
     # private function 
     def _validateETFrequest(self, requestETF: str):
         """

@@ -1,6 +1,7 @@
 from replicateETF.scrapeETF import ETFHandler
 from alpaca_trade_api.rest import REST
 
+# it is optional to add api key and secret here or export the keys
 myObj = ETFHandler()
 symbol = "VOO"
 etfAssetDict = myObj.getETFTable(symbol)
@@ -20,7 +21,6 @@ else:
     for key in etfAssetDict.keys():
         equity = etfAssetDict[key]
         percent = equity['percent']/100
-        # TODO - should be a separate function to enable retry logic
         try:
             orderResponse=api.submit_order(symbol=key, 
                             notional=investmentAmount*percent, 

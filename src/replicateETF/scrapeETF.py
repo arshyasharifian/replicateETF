@@ -83,7 +83,7 @@ class ETFHandler:
         A paper account is also applicable here. In other words, this can be used for testing and does not
         require actual cash. This is important to determine whether orders can be placed.
         """
-        api = tradeapi.REST()
+        api = tradeapi.REST(key_id = self.api_key, secret_key=self.api_secret)
         account = api.get_account()
         availableCash = account.cash
         return int(float(availableCash))

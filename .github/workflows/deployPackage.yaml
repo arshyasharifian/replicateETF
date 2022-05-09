@@ -40,9 +40,16 @@ jobs:
       - name: Build Package
         run: python3 -m build
 
-      - name: Publish a Python distribution to PyPI
+      - name: TEST Publish a Python distribution to PyPI
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: __token__
           password: ${{ secrets.PYPI_API_TOKEN }}
           repository_url: https://test.pypi.org/legacy/
+
+      - name: PROD Publish a Python distribution to PyPI
+        uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: __token__
+          password: ${{ secrets.PROD_PYPI_API_KEY }}          
+          repository_url:  https://upload.pypi.org/legacy/

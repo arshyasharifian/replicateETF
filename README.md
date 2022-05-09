@@ -26,7 +26,7 @@ export APCA_API_BASE_URL=https://paper-api.alpaca.markets
 
 ## Download the Package:
 ```
-pip install -i https://test.pypi.org/simple/ replicateETF
+pip install replicateETF
 ```
 
 ## Import package:

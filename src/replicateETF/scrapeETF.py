@@ -34,7 +34,7 @@ class ETFHandler:
             print(e)
             return True
 
-    def getETFTable(self, etfSymbol: str):
+    def getETFTable(self, etfSymbol: str,filterDict={}):
         """
         given the etfSymbol value, we open a chrome browser and search for the page
         if found, we expand the page to include all the equities. Finally, we construct
@@ -74,9 +74,10 @@ class ETFHandler:
             except BaseException as ex:
                 print(ex)
         browser.quit()
+        #assetDict = self.filter(filterDict) TODO
         return asset_dict
 
-    def getMinimumDollars(self, etfSymbol: str):
+    def getMinimumDollars(self, etfSymbol: str,filterDict={}):
         # calls get_etf_holdings, must pass in ETF symbol
         """
         given the ETF symbol, this determine the minimum amount of dollars to satisfy the Alpaca API
@@ -87,7 +88,7 @@ class ETFHandler:
         will meet the minimum requirements by Alpaca.
         """
 
-        etfAssetDict = self.getETFTable(etfSymbol)
+        etfAssetDict = self.getETFTable(etfSymbol,filterDict)
         
         minimumDollars = 0
         lowestPercentage = 100
@@ -106,9 +107,10 @@ class ETFHandler:
             minimumDollars /= smallestInvestment
         return ceil(minimumDollars)
        
+
         """
         TODO - 
-    def filter(arrayOfSignals):
+    def filter(filterDict):
         ex. [Profit Growth:High, DebtToEquity:Low, ReturnOnEquity: High]
         filter the etf holdings based on signals such as Return on Equity, Profit Growth, Debt to Equity and weigh each signal as percentage using z-scoring approach on which
         to evaluate 
@@ -121,6 +123,8 @@ class ETFHandler:
         parser.add_argument('RE', required=false)
         
         args = parser.parse_args()
+
+        
         """
 
 class AlpacaClient:
@@ -131,6 +135,7 @@ class AlpacaClient:
             self.base_url = base_url
             self.investedAmount = investedAmount #amount invested set not 0 if etfTable is set
             self.etfTable = etfTable #set own etf table
+        
         def getAvailableCash(self):
             """
             Based on the credentials read through environment variables, we assess the available "cash" in the account.
@@ -141,13 +146,14 @@ class AlpacaClient:
             account = api.get_account()
             availableCash = account.cash
             return int(float(availableCash))
-        def buy(investmentAmount,top=-1,filterArray={}): 
+        
+        def buy(investmentAmount,top=-1,filterDict={}): 
             """
             investmentAmount is the amount to be bought, top is number of stocks from descendingOrder in holding Percentage in ETF 
             """
             myObj = ETFHandler()
-            etfAssetDict = myObj.getETFTable(self.etf)
-            #myObj.filter(filterArray)
+            etfAssetDict = myObj.getETFTable(self.etf,filterDict)
+            
             # identify the mimimum amount of purchasing power to build ETF
             minimumDollars = myObj.getMinimumDollars(symbol)
 
@@ -180,15 +186,16 @@ class AlpacaClient:
 
 
         
-        def sell(amountToSell):
+        def sell(amountToSell,filterDict={}):
             """   
             Sells a certain amount
            #sells overweighted holdings including delisted ones first
            #sell from each holding for the rest of sell amount
             """
             myObj = ETFHandler()
-            etfAssetDict = myObj.getETFTable(self.etf)
+            etfAssetDict = myObj.getETFTable(self.etf,filterDict)
             api = REST()
+            totalBought = 0
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]
                 currentEquity = self.etfTable.get(key,None)
@@ -197,53 +204,112 @@ class AlpacaClient:
                     continue
 
                 diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
-                if diffPercent <= 0 or self.investedAmount * diffPercent > amountToSell or amountToSell <= 0 :
+                targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100)
+                if diffPercent <= 0 or targetSell > amountToSell or amountToSell <= 0 :
                     continue
-                amountToSell -= self.investedAmount * diffPercent
+                
                 
                 # TODO - should be a separate function to enable retry logic
                 try:
                     orderResponse=api.submit_order(symbol=key, 
-                                    notional=self.investedAmount * diffPercent, 
+                                    notional=targetSell, 
                                     side="sell",
                                     type="market")
                     print(orderResponse)
-                    self.investedAmount -= orderResponse["notional"]   
+                    amountToSell -= targetSell
+                    totalBought += orderResponse["notional"]   
                 except Exception as e:
                     print(e)  
-            if amountToSell > 0 :
-                for key in etfAssetDict.keys():
-                    equity = etfAssetDict[key]
-                    percent = equity['percent']/100
-                    # TODO - should be a separate function to enable retry logic
-                    try:
-                        orderResponse=api.submit_order(symbol=key, 
-                                        notional=amountToSell*percent, 
-                                        side="sell",
-                                        type="market")
-                        print(orderResponse)
+            self.investedAmount -= totalBought
+         
+            for key in etfAssetDict.keys():
+                targetEquity = etfAssetDict[key]
+                currentEquity = self.etfTable.get(key,None)
+                percent = targetEquity['percent']/100
+                if amountToSell <= 0 :
+                    continue
+                # TODO - should be a separate function to enable retry logic
+                try:
+                    orderResponse=api.submit_order(symbol=key, 
+                                    notional=amountToSell*percent, 
+                                    side="sell",
+                                    type="market")
+                    print(orderResponse)
+                    amountToSell -= amountToSell*percent
+                    totalBought += orderResponse["notional"]  
                    
-                    except Exception as e:
-                        print(e)
+                except Exception as e:
+                    print(e)
+            self.investedAmount -= totalBought
+
            
         
         
-        """
-        TODO - create a new function to rebalance portfolio based on ETF changes
-        def rebalance():
+        
+        def rebalance(filterDict={}):
+            """
             determine the differences between the user's current portfoilio and current ETF holdings.
             Buy and sell shares of the user's current portfolio to ensure there are no differences.
             # sell overweighted holdings
-            #reinvest possible dividends?
             #buy underweighted holdings
-            #buy rest as a whole
-            
-        """
+             """
+            soldTotal = 0
+            myObj = ETFHandler()
+            etfAssetDict = myObj.getETFTable(self.etf,filterDict)
+            api = REST()
+            totalBought = 0
+            for key in etfAssetDict.keys():
+                targetEquity = etfAssetDict[key]
+                currentEquity = self.etfTable.get(key,None)
+
+                
+                if currentEquity == None:
+                    print(f"{targetEquity['name']} is missing, Buy to add it")
+                    continue
+                diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
+                targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100)
+
+                if diffPercent <= 0 or targetSell > amountToSell or amountToSell <= 0 :
+                    continue
+                
+                
+                # TODO - should be a separate function to enable retry logic
+                try:
+                    orderResponse=api.submit_order(symbol=key, 
+                                    notional=targetSell, 
+                                    side="sell",
+                                    type="market")
+                    print(orderResponse)
+                    soldTotal += targetSell
+                    totalBought -= orderResponse["notional"]   
+                except Exception as e:
+                    print(e)
+            self.investedAmount -= totalBought 
+            totalBought = 0
+            for key in etfAssetDict.keys():
+                diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
+                targetBuy = ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100) - self.investedAmount
+
+                if diffPercent >= 0 or targetBuy < 1 or soldTotal < 1:
+                    continue
+                # TODO - should be a separate function to enable retry logic
+                try:
+                    orderResponse=api.submit_order(symbol=key, 
+                                    notional=targetBuy, 
+                                    side="buy",
+                                    type="market")
+                    print(orderResponse)  
+                    soldTotal -= targetBuy
+                    totalBought += orderResponse["notional"]   
+                                         
+                except Exception as e:
+                    print(e)
+            self.investedAmount += totalBought 
 
         """
         TODO - create a new function to rebalance portfolio based on ETF changes
         def autoRebalance():
-            At a set Time Rebalance automatically daily,monthly, semianually, annually
+            At a set occurence, Rebalance automatically daily,monthly, semianually, annually
             
         """
      

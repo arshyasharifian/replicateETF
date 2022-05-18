@@ -10,6 +10,7 @@ from math import ceil
 #TODO Websockets
 class ETFHandler:
     def __init__(self):
+        pass
      
     
     # private function 
@@ -141,7 +142,7 @@ class AlpacaClient:
             availableCash = account.cash
             return int(float(availableCash))
         def buy(investmentAmount,top=-1,filterArray={}): 
-             """
+            """
             investmentAmount is the amount to be bought, top is number of stocks from descendingOrder in holding Percentage in ETF 
             """
             myObj = ETFHandler()
@@ -180,11 +181,11 @@ class AlpacaClient:
 
         
         def sell(amountToSell):
-        """   
+            """   
             Sells a certain amount
            #sells overweighted holdings including delisted ones first
            #sell from each holding for the rest of sell amount
-        """
+            """
             myObj = ETFHandler()
             etfAssetDict = myObj.getETFTable(self.etf)
             api = REST()
@@ -194,7 +195,7 @@ class AlpacaClient:
                 if currentEquity == None:
                     print(f"{targetEquity['name']} is missing, Buy to add it")
                     continue
-                #TODO check if less than $1 sell orders are possible
+
                 diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
                 if diffPercent <= 0 or self.investedAmount * diffPercent > amountToSell or amountToSell <= 0 :
                     continue

@@ -3,8 +3,8 @@ Name: replicateETF
 Version: 0.0.2
 Summary: A package that replicates an ETFs by buying the underlying assets
 Home-page: https://github.com/pypa/replicateETF
-Author: Arshya Ary Sharifian
-Author-email: arshyasharifian@gmail.com
+Author: Arshya Ary Sharifian, ProgramComputer
+Author-email: arshyasharifian@gmail.com, 22284856+ProgramComputer@users.noreply.github.com
 License: UNKNOWN
 Platform: UNKNOWN
 Classifier: Programming Language :: Python :: 3

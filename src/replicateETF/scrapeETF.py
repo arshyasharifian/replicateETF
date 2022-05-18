@@ -7,12 +7,10 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.webdriver import WebDriver
 from math import ceil
-
+#TODO Websockets
 class ETFHandler:
-    def __init__(self, api_key=None, api_secret=None, base_url='https://paper-api.alpaca.markets'):
-        self.api_key = api_key
-        self.api_secret = api_secret
-        self.base_url = base_url
+    def __init__(self):
+     
     
     # private function 
     def _validateETFrequest(self, requestETF: str):
@@ -76,19 +74,8 @@ class ETFHandler:
                 print(ex)
         browser.quit()
         return asset_dict
-        
-    def getAvailableCash(self):
-        """
-        Based on the credentials read through environment variables, we assess the available "cash" in the account.
-        A paper account is also applicable here. In other words, this can be used for testing and does not
-        require actual cash. This is important to determine whether orders can be placed.
-        """
-        api = tradeapi.REST(key_id = self.api_key, secret_key=self.api_secret)
-        account = api.get_account()
-        availableCash = account.cash
-        return int(float(availableCash))
 
-    def getMimimumDollars(self, etfSymbol: str):
+    def getMinimumDollars(self, etfSymbol: str):
         # calls get_etf_holdings, must pass in ETF symbol
         """
         given the ETF symbol, this determine the minimum amount of dollars to satisfy the Alpaca API
@@ -117,10 +104,148 @@ class ETFHandler:
         if smallestInvestment > 1:
             minimumDollars /= smallestInvestment
         return ceil(minimumDollars)
+       
+        """
+        TODO - 
+    def filter(arrayOfSignals):
+        ex. [Profit Growth:High, DebtToEquity:Low, ReturnOnEquity: High]
+        filter the etf holdings based on signals such as Return on Equity, Profit Growth, Debt to Equity and weigh each signal as percentage using z-scoring approach on which
+        to evaluate 
 
+        
+        parser = reqparse.RequestParser()  # initialize
+        
+        parser.add_argument('PG', required=false)  # add args
+        parser.add_argument('D/E', required=false)
+        parser.add_argument('RE', required=false)
+        
+        args = parser.parse_args()
+        """
+
+class AlpacaClient:
+        def __init__(self,etf,etfTable={},investedAmount = 0, api_key=None, api_secret=None, base_url='https://paper-api.alpaca.markets'):
+            self.etf = etf
+            self.api_key = api_key
+            self.api_secret = api_secret
+            self.base_url = base_url
+            self.investedAmount = investedAmount #amount invested set not 0 if etfTable is set
+            self.etfTable = etfTable #set own etf table
+        def getAvailableCash(self):
+            """
+            Based on the credentials read through environment variables, we assess the available "cash" in the account.
+            A paper account is also applicable here. In other words, this can be used for testing and does not
+            require actual cash. This is important to determine whether orders can be placed.
+            """
+            api = tradeapi.REST(key_id = self.api_key, secret_key=self.api_secret)
+            account = api.get_account()
+            availableCash = account.cash
+            return int(float(availableCash))
+        def buy(investmentAmount,top=-1,filterArray={}): 
+             """
+            investmentAmount is the amount to be bought, top is number of stocks from descendingOrder in holding Percentage in ETF 
+            """
+            myObj = ETFHandler()
+            etfAssetDict = myObj.getETFTable(self.etf)
+            #myObj.filter(filterArray)
+            # identify the mimimum amount of purchasing power to build ETF
+            minimumDollars = myObj.getMinimumDollars(symbol)
+
+            # determine whether available cash enough to build ETF
+            if self.getAvailableCash() < minimumDollars:
+                print ("Insufficient fund to build ETF")
+            else:
+                if investmentAmount < minimumDollars:
+                    print(f"Based on the ETF, please enter a value greater than {minimumDollars} to invest.")
+                    exit(0)
+            #build Alpaca client
+            api = REST()
+            for key in etfAssetDict.keys():
+                equity = etfAssetDict[key]
+                percent = equity['percent']/100
+                # TODO - should be a separate function to enable retry logic
+                try:
+                    orderResponse=api.submit_order(symbol=key, 
+                                    notional=investmentAmount*percent, 
+                                    side="buy",
+                                    type="market")
+                    
+                    print(orderResponse)
+                    self.investedAmount += orderResponse["notional"]
+                    self.etfTable.setdefault(key, equity['percent'])
+                except Exception as e:
+                    print(e)
+           
+        
+
+
+        
+        def sell(amountToSell):
+        """   
+            Sells a certain amount
+           #sells overweighted holdings including delisted ones first
+           #sell from each holding for the rest of sell amount
+        """
+            myObj = ETFHandler()
+            etfAssetDict = myObj.getETFTable(self.etf)
+            api = REST()
+            for key in etfAssetDict.keys():
+                targetEquity = etfAssetDict[key]
+                currentEquity = self.etfTable.get(key,None)
+                if currentEquity == None:
+                    print(f"{targetEquity['name']} is missing, Buy to add it")
+                    continue
+                #TODO check if less than $1 sell orders are possible
+                diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
+                if diffPercent <= 0 or self.investedAmount * diffPercent > amountToSell or amountToSell <= 0 :
+                    continue
+                amountToSell -= self.investedAmount * diffPercent
+                
+                # TODO - should be a separate function to enable retry logic
+                try:
+                    orderResponse=api.submit_order(symbol=key, 
+                                    notional=self.investedAmount * diffPercent, 
+                                    side="sell",
+                                    type="market")
+                    print(orderResponse)
+                    self.investedAmount -= orderResponse["notional"]   
+                except Exception as e:
+                    print(e)  
+            if amountToSell > 0 :
+                for key in etfAssetDict.keys():
+                    equity = etfAssetDict[key]
+                    percent = equity['percent']/100
+                    # TODO - should be a separate function to enable retry logic
+                    try:
+                        orderResponse=api.submit_order(symbol=key, 
+                                        notional=amountToSell*percent, 
+                                        side="sell",
+                                        type="market")
+                        print(orderResponse)
+                   
+                    except Exception as e:
+                        print(e)
+           
+        
+        
         """
         TODO - create a new function to rebalance portfolio based on ETF changes
         def rebalance():
             determine the differences between the user's current portfoilio and current ETF holdings.
             Buy and sell shares of the user's current portfolio to ensure there are no differences.
+            # sell overweighted holdings
+            #reinvest possible dividends?
+            #buy underweighted holdings
+            #buy rest as a whole
+            
         """
+
+        """
+        TODO - create a new function to rebalance portfolio based on ETF changes
+        def autoRebalance():
+            At a set Time Rebalance automatically daily,monthly, semianually, annually
+            
+        """
+     
+        
+        
+        

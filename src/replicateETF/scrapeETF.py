@@ -167,7 +167,7 @@ class AlpacaClient:
             
 
             # identify the mimimum amount of purchasing power to build ETF
-            minimumDollars = myObj.getMinimumDollars(symbol)
+            minimumDollars = myObj.getMinimumDollars(self.etf)
 
             # determine whether available cash enough to build ETF
             if self.getAvailableCash() < minimumDollars:

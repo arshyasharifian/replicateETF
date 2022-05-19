@@ -155,7 +155,7 @@ class AlpacaClient:
             availableCash = account.cash
             return int(float(availableCash))
         
-        def buy(investmentAmount,top=-1,filterDict={}): 
+        def buy(self,investmentAmount,top=-1,filterDict={}): 
             """
             investmentAmount is the amount to be bought, top is number of stocks from descendingOrder in holding Percentage in ETF 
             """
@@ -198,7 +198,7 @@ class AlpacaClient:
 
 
         
-        def sell(amountToSell,filterDict={}):
+        def sell(self,amountToSell,filterDict={}):
             """   
             Sells a certain amount
            #sells overweighted holdings including delisted ones first
@@ -258,7 +258,7 @@ class AlpacaClient:
         
         
         
-        def rebalance(filterDict={}):
+        def rebalance(self,filterDict={}):
             """
             determine the differences between the user's current portfoilio and current ETF holdings.
             Buy and sell shares of the user's current portfolio to ensure there are no differences.

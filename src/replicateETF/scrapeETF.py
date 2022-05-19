@@ -147,7 +147,7 @@ class AlpacaClient:
             """
             api = REST(self.api_key, self.api_secret,self.base_url)
             account = api.get_account()
-            self.investedAmount += float(account.long_market_value) + float(account.short_market_value)
+            self.investedAmount = float(account.long_market_value) + float(account.short_market_value)
 
         
         
@@ -192,7 +192,7 @@ class AlpacaClient:
                     print(f"Based on the ETF, please enter a value greater than or equal to {minimumDollars} to invest.")
                     exit(0)
             #build Alpaca client
-            totalBought = 0
+            #totalBought = 0
             api = REST(self.api_key, self.api_secret,self.base_url)
             for key in etfAssetDict.keys():
                 equity = etfAssetDict[key]
@@ -205,8 +205,8 @@ class AlpacaClient:
                                     type="market")
                     
                     print(orderResponse)
-                    totalBought += float(orderResponse.notional)
-                    self.etfTable.setdefault(key, equity['percent'])
+                    #totalBought += float(orderResponse.notional)
+                    #self.etfTable.setdefault(key, equity['percent'])
                 except Exception as e:
                     print(e)
            # self.investedAmount += totalBought
@@ -225,18 +225,19 @@ class AlpacaClient:
             myObj = ETFHandler()
             etfAssetDict = myObj.getETFTable(self.etf,filterDict)
             api = REST(self.api_key, self.api_secret,self.base_url)
-            totalBought = 0
+            #totalBought = 0
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]
-                currentEquity = self.etfTable.get(key,None)
-                if currentEquity == None:
+                if  key not in ''.join(str(e) for e in api.list_positions()):
                     print(f"{targetEquity['name']} is missing, Buy to add it")
                     continue
-
-                diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
-
+                currentEquity =  api.get_position(key).market_value#self.etfTable.get(key,None)
+                
                 self.__updateInvestedAmount()
-                targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100)
+
+                diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
+
+                targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity/self.investedAmount)
                 if diffPercent <= 0 or targetSell > amountToSell or amountToSell <= 0 :
                     continue
                 
@@ -248,18 +249,19 @@ class AlpacaClient:
                                     side="sell",
                                     type="market")
                     print(orderResponse)
-                    amountToSell -= targetSell
-                    totalBought += float(orderResponse.notional )
+                    amountToSell -= float(orderResponse.notional)
+                    #totalBought += float(orderResponse.notional )
                 except Exception as e:
                     print(e)  
             #self.investedAmount -= totalBought
             
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]
-                currentEquity = self.etfTable.get(key,None)
                 percent = targetEquity['percent']/100
-                if amountToSell <= 0 :
+                if amountToSell <= 0 or  key not in ''.join(str(e) for e in api.list_positions()): 
                     continue
+                currentEquity = api.get_position(key).market_value #self.etfTable.get(key,None)
+
                 # TODO - should be a separate function to enable retry logic
                 try:
                     orderResponse=api.submit_order(symbol=key, 
@@ -267,8 +269,8 @@ class AlpacaClient:
                                     side="sell",
                                     type="market")
                     print(orderResponse)
-                    amountToSell -= amountToSell*percent
-                    totalBought += float(orderResponse.notional)
+                    amountToSell -= float(orderResponse.notional)
+                    #totalBought += float(orderResponse.notional)
                    
                 except Exception as e:
                     print(e)
@@ -289,19 +291,21 @@ class AlpacaClient:
             myObj = ETFHandler()
             etfAssetDict = myObj.getETFTable(self.etf,filterDict)
             api = REST(self.api_key, self.api_secret,self.base_url)
-            totalBought = 0
+            #totalBought = 0
             self.__updateInvestedAmount();
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]
-                currentEquity = self.etfTable.get(key,None)
-
                 
-                if currentEquity == None:
+                if key not in ''.join(str(e) for e in api.list_positions()):
                     print(f"{targetEquity['name']} is missing, Buy to add it")
                     continue
-                diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
+                currentEquity = api.get_position(key).market_value #self.etfTable.get(key,None)
+
+                
                 self.__updateInvestedAmount();
-                targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100)
+                diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
+                
+                targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity/self.investedAmount)
 
                 if diffPercent <= 0:
                     continue
@@ -314,16 +318,16 @@ class AlpacaClient:
                                     side="sell",
                                     type="market")
                     print(orderResponse)
-                    soldTotal += targetSell
-                    totalBought -= float(orderResponse.notional)  
+                    soldTotal += float(orderResponse.notional)
+                    #totalBought -= float(orderResponse.notional)  
                 except Exception as e:
                     print(e)
             #self.investedAmount -= totalBought 
-            totalBought = 0
+            #totalBought = 0
             for key in etfAssetDict.keys():
-                diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
                 self.__updateInvestedAmount();
-                targetBuy = ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100) - self.investedAmount
+                diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
+                targetBuy = ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity/self.investedAmount) - self.investedAmount
 
                 if diffPercent >= 0 or targetBuy < 1 or soldTotal < 1:
                     continue
@@ -334,8 +338,8 @@ class AlpacaClient:
                                     side="buy",
                                     type="market")
                     print(orderResponse)  
-                    soldTotal -= targetBuy
-                    totalBought += float(orderResponse.notional) 
+                    soldTotal -= float(orderResponse.notional)
+                    #totalBought += float(orderResponse.notional) 
                                          
                 except Exception as e:
                     print(e)

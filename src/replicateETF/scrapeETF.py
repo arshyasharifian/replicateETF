@@ -74,7 +74,7 @@ class ETFHandler:
             except BaseException as ex:
                 print(ex)
         browser.quit()
-        assetDict = self.filter(assetDict,filterDict);
+        asset_dict = self.filter(asset_dict,filterDict);
         return asset_dict
 
     def getMinimumDollars(self, etfSymbol: str,filterDict={}):

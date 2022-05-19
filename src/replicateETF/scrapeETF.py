@@ -155,13 +155,13 @@ class AlpacaClient:
             availableCash = account.cash
             return int(float(availableCash))
         
-        def buy(self,investmentAmount,top=-1,filterDict={}): 
+        def buy(self,investmentAmount,top=0,filterDict={}): 
             """
             investmentAmount is the amount to be bought, top is number of stocks from descendingOrder in holding Percentage in ETF 
             """
             myObj = ETFHandler()
             etfAssetDict = myObj.getETFTable(self.etf,filterDict)
-            if top != -1:
+            if top != 0:
                 etfAssetDict = dict(sorted(etfAssetDict.items(), key = lambda x: x[1]['percent'],reverse=True))
                 etfAssetDict = dict(list(etfAssetDict.items())[0: top])
             

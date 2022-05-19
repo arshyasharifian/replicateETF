@@ -139,6 +139,15 @@ class AlpacaClient:
             self.base_url = base_url
             self.investedAmount = investedAmount #amount invested set not 0 if etfTable is set
             self.etfTable = etfTable #set own etf table
+        #TODO
+        """
+        def updateInvestmentAccount:
+            Use websocket to update the investment amount as time changes
+        
+        """
+        
+        
+        
         def getInvestedAmount(self):
             """
             return invested amount

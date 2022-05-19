@@ -237,7 +237,7 @@ class AlpacaClient:
 
                 diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
                 
-                targetSell = (currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1)
+                targetSell = abs(currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1)
                 if diffPercent <= 0 or targetSell > amountToSell or amountToSell <= 0 :
                     continue
                 
@@ -305,7 +305,7 @@ class AlpacaClient:
                 self.__updateInvestedAmount();
                 diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
                 
-                targetSell = (currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1)
+                targetSell = abs(currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1)
 
                 if diffPercent <= 0:
                     continue

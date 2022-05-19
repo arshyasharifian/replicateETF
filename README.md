@@ -11,6 +11,9 @@ This repository allows users to purchase the underlying stocks of an ETF.
 This repository uses Alpaca API, but the code can be reused for other trading platform like IEX. To directly
 use the package defined here, please setup an Alpaca API [account](https://alpaca.markets/docs/).
 
+## Alpaca
+As of now, The package assumes the entire account is used for etf replication so any
+additional equity added outside of package could/may be changed.
 ## Export Alpaca API Keys and Base URL
 
 This example showcases exporting the basic API keys needed to execute some of the available functions. The `BASE_URL` defined below corresponds to the paper trading for testing algorithms. There is an alternative `BASE_URL` for live trading.

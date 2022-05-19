@@ -14,7 +14,7 @@ class ETFHandler:
      
     
     # private function 
-    def _validateETFrequest(self, requestETF: str):
+    def __validateETFrequest(self, requestETF: str):
         """
         Checks whether the ETF symbol represents a valid page url by visiting the page
         and returning true if valid URL and false otherwise. Fail is returned when a page
@@ -137,14 +137,20 @@ class AlpacaClient:
             self.api_key = api_key
             self.api_secret = api_secret
             self.base_url = base_url
-            self.investedAmount = investedAmount #amount invested set not 0 if etfTable is set
+            self.investedAmount = investedAmount #amount invested already in account, not 0 if etfTable is set
             self.etfTable = etfTable #set own etf table
-        #TODO
-        """
-        def updateInvestmentAccount:
+      
+        #private function
+        def __updateInvestedAmount(self):
+            """
             Use websocket to update the investment amount as time changes
+            """
+            api = REST(self.api_key, self.api_secret,self.base_url)
+            account = api.get_account()
+            self.investedAmount += float(account.long_market_value) + float(account.short_market_value)
+
         
-        """
+        
         
         
         
@@ -203,7 +209,7 @@ class AlpacaClient:
                     self.etfTable.setdefault(key, equity['percent'])
                 except Exception as e:
                     print(e)
-            self.investedAmount += totalBought
+           # self.investedAmount += totalBought
 
            
         
@@ -228,6 +234,8 @@ class AlpacaClient:
                     continue
 
                 diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
+
+                self.__updateInvestedAmount()
                 targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100)
                 if diffPercent <= 0 or targetSell > amountToSell or amountToSell <= 0 :
                     continue
@@ -244,8 +252,8 @@ class AlpacaClient:
                     totalBought += float(orderResponse.notional )
                 except Exception as e:
                     print(e)  
-            self.investedAmount -= totalBought
-         
+            #self.investedAmount -= totalBought
+            
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]
                 currentEquity = self.etfTable.get(key,None)
@@ -264,7 +272,7 @@ class AlpacaClient:
                    
                 except Exception as e:
                     print(e)
-            self.investedAmount -= totalBought
+            #self.investedAmount -= totalBought
 
            
         
@@ -282,6 +290,7 @@ class AlpacaClient:
             etfAssetDict = myObj.getETFTable(self.etf,filterDict)
             api = REST(self.api_key, self.api_secret,self.base_url)
             totalBought = 0
+            self.__updateInvestedAmount();
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]
                 currentEquity = self.etfTable.get(key,None)
@@ -291,6 +300,7 @@ class AlpacaClient:
                     print(f"{targetEquity['name']} is missing, Buy to add it")
                     continue
                 diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
+                self.__updateInvestedAmount();
                 targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100)
 
                 if diffPercent <= 0:
@@ -308,10 +318,11 @@ class AlpacaClient:
                     totalBought -= float(orderResponse.notional)  
                 except Exception as e:
                     print(e)
-            self.investedAmount -= totalBought 
+            #self.investedAmount -= totalBought 
             totalBought = 0
             for key in etfAssetDict.keys():
                 diffPercent = (currentEquity['percent'] - targetEquity['percent'])/100
+                self.__updateInvestedAmount();
                 targetBuy = ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity['percent']/100) - self.investedAmount
 
                 if diffPercent >= 0 or targetBuy < 1 or soldTotal < 1:
@@ -329,7 +340,7 @@ class AlpacaClient:
                 except Exception as e:
                     print(e)
             print(f"{soldTotal} is left over from rebalance")
-            self.investedAmount += totalBought 
+            #self.investedAmount += totalBought 
 
         """
         TODO - create a new function to rebalance portfolio based on ETF changes

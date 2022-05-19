@@ -190,7 +190,7 @@ class AlpacaClient:
                                     type="market")
                     
                     print(orderResponse)
-                    totalBought += orderResponse.notional 
+                    totalBought += float(orderResponse.notional)
                     self.etfTable.setdefault(key, equity['percent'])
                 except Exception as e:
                     print(e)
@@ -232,7 +232,7 @@ class AlpacaClient:
                                     type="market")
                     print(orderResponse)
                     amountToSell -= targetSell
-                    totalBought += orderResponse.notional 
+                    totalBought += float(orderResponse.notional )
                 except Exception as e:
                     print(e)  
             self.investedAmount -= totalBought
@@ -251,7 +251,7 @@ class AlpacaClient:
                                     type="market")
                     print(orderResponse)
                     amountToSell -= amountToSell*percent
-                    totalBought += orderResponse.notional 
+                    totalBought += float(orderResponse.notional)
                    
                 except Exception as e:
                     print(e)
@@ -296,7 +296,7 @@ class AlpacaClient:
                                     type="market")
                     print(orderResponse)
                     soldTotal += targetSell
-                    totalBought -= orderResponse.notional  
+                    totalBought -= float(orderResponse.notional)  
                 except Exception as e:
                     print(e)
             self.investedAmount -= totalBought 
@@ -315,7 +315,7 @@ class AlpacaClient:
                                     type="market")
                     print(orderResponse)  
                     soldTotal -= targetBuy
-                    totalBought += orderResponse.notional 
+                    totalBought += float(orderResponse.notional) 
                                          
                 except Exception as e:
                     print(e)

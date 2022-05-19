@@ -236,8 +236,8 @@ class AlpacaClient:
                 self.__updateInvestedAmount()
 
                 diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
-
-                targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity/self.investedAmount)
+                
+                targetSell = (currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1)
                 if diffPercent <= 0 or targetSell > amountToSell or amountToSell <= 0 :
                     continue
                 
@@ -305,7 +305,7 @@ class AlpacaClient:
                 self.__updateInvestedAmount();
                 diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
                 
-                targetSell = self.investedAmount - ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity/self.investedAmount)
+                targetSell = (currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1)
 
                 if diffPercent <= 0:
                     continue
@@ -327,7 +327,7 @@ class AlpacaClient:
             for key in etfAssetDict.keys():
                 self.__updateInvestedAmount();
                 diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
-                targetBuy = ((targetEquity['percent']/100)* self.investedAmount)/(currentEquity/self.investedAmount) - self.investedAmount
+                targetBuy = (currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1)
 
                 if diffPercent >= 0 or targetBuy < 1 or soldTotal < 1:
                     continue

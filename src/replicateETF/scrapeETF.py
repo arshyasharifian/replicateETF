@@ -174,7 +174,7 @@ class AlpacaClient:
                 print ("Insufficient fund to build ETF")
             else:
                 if investmentAmount < minimumDollars:
-                    print(f"Based on the ETF, please enter a value greater than {minimumDollars} to invest.")
+                    print(f"Based on the ETF, please enter a value greater than or equal to {minimumDollars} to invest.")
                     exit(0)
             #build Alpaca client
             api = REST(self.api_key, self.api_secret,self.base_url)
@@ -189,7 +189,7 @@ class AlpacaClient:
                                     type="market")
                     
                     print(orderResponse)
-                    self.investedAmount += orderResponse["notional"]
+                    self.investedAmount += orderResponse.notional
                     self.etfTable.setdefault(key, equity['percent'])
                 except Exception as e:
                     print(e)
@@ -229,7 +229,7 @@ class AlpacaClient:
                                     type="market")
                     print(orderResponse)
                     amountToSell -= targetSell
-                    totalBought += orderResponse["notional"]   
+                    totalBought += orderResponse.notional 
                 except Exception as e:
                     print(e)  
             self.investedAmount -= totalBought
@@ -248,7 +248,7 @@ class AlpacaClient:
                                     type="market")
                     print(orderResponse)
                     amountToSell -= amountToSell*percent
-                    totalBought += orderResponse["notional"]  
+                    totalBought += orderResponse.notional 
                    
                 except Exception as e:
                     print(e)
@@ -293,7 +293,7 @@ class AlpacaClient:
                                     type="market")
                     print(orderResponse)
                     soldTotal += targetSell
-                    totalBought -= orderResponse["notional"]   
+                    totalBought -= orderResponse.notional  
                 except Exception as e:
                     print(e)
             self.investedAmount -= totalBought 
@@ -312,7 +312,7 @@ class AlpacaClient:
                                     type="market")
                     print(orderResponse)  
                     soldTotal -= targetBuy
-                    totalBought += orderResponse["notional"]   
+                    totalBought += orderResponse.notional 
                                          
                 except Exception as e:
                     print(e)

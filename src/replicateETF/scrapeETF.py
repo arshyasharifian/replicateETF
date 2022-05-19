@@ -130,7 +130,7 @@ class ETFHandler:
 
         
         
-
+#TODO Alpaca API limit is 200 so etf with more than 200 constituents will have to be retried when exceeded
 class AlpacaClient:
         def __init__(self,etf,etfTable={},investedAmount = 0, api_key=None, api_secret=None, base_url='https://paper-api.alpaca.markets'):
             self.etf = etf

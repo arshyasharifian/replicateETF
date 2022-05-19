@@ -177,6 +177,7 @@ class AlpacaClient:
                     print(f"Based on the ETF, please enter a value greater than or equal to {minimumDollars} to invest.")
                     exit(0)
             #build Alpaca client
+            totalBought = 0
             api = REST(self.api_key, self.api_secret,self.base_url)
             for key in etfAssetDict.keys():
                 equity = etfAssetDict[key]
@@ -189,10 +190,12 @@ class AlpacaClient:
                                     type="market")
                     
                     print(orderResponse)
-                    self.investedAmount += orderResponse.notional
+                    totalBought += orderResponse.notional 
                     self.etfTable.setdefault(key, equity['percent'])
                 except Exception as e:
                     print(e)
+            self.investedAmount += totalBought
+
            
         
 

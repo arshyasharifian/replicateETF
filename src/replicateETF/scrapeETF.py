@@ -7,7 +7,7 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.webdriver import WebDriver
 from math import ceil
-#TODO Websockets
+
 class ETFHandler:
     def __init__(self):
         pass
@@ -74,7 +74,7 @@ class ETFHandler:
             except BaseException as ex:
                 print(ex)
         browser.quit()
-        #assetDict = self.filter(filterDict) TODO
+        assetDict = self.filter(assetDict,filterDict);
         return asset_dict
 
     def getMinimumDollars(self, etfSymbol: str,filterDict={}):
@@ -108,24 +108,28 @@ class ETFHandler:
         return ceil(minimumDollars)
        
 
+    
+        #TODO https://stats.stackexchange.com/a/348605
+    def filter(self,assetDict,filterDict):
         """
-        TODO - 
-    def filter(filterDict):
         ex. [Profit Growth:High, DebtToEquity:Low, ReturnOnEquity: High]
         filter the etf holdings based on signals such as Return on Equity, Profit Growth, Debt to Equity and weigh each signal as percentage using z-scoring approach on which
         to evaluate 
-
-        
-        parser = reqparse.RequestParser()  # initialize
-        
-        parser.add_argument('PG', required=false)  # add args
-        parser.add_argument('D/E', required=false)
-        parser.add_argument('RE', required=false)
-        
-        args = parser.parse_args()
-
         
         """
+        
+        # parser = reqparse.RequestParser()  # initialize
+        
+        # parser.add_argument('PG', required=false)  # add args
+        # parser.add_argument('D/E', required=false)
+        # parser.add_argument('RE', required=false)
+        
+        # args = parser.parse_args()
+
+        return assetDict
+
+        
+        
 
 class AlpacaClient:
         def __init__(self,etf,etfTable={},investedAmount = 0, api_key=None, api_secret=None, base_url='https://paper-api.alpaca.markets'):
@@ -135,7 +139,11 @@ class AlpacaClient:
             self.base_url = base_url
             self.investedAmount = investedAmount #amount invested set not 0 if etfTable is set
             self.etfTable = etfTable #set own etf table
-        
+        def getInvestedAmount(self):
+            """
+            return invested amount
+            """
+            return self.investedAmount
         def getAvailableCash(self):
             """
             Based on the credentials read through environment variables, we assess the available "cash" in the account.
@@ -153,7 +161,11 @@ class AlpacaClient:
             """
             myObj = ETFHandler()
             etfAssetDict = myObj.getETFTable(self.etf,filterDict)
+            if top != -1:
+                etfAssetDict = dict(sorted(etfAssetDict.items(), key = lambda x: x[1]['percent'],reverse=True))
+                etfAssetDict = dict(list(etfAssetDict.items())[0: top])
             
+
             # identify the mimimum amount of purchasing power to build ETF
             minimumDollars = myObj.getMinimumDollars(symbol)
 
@@ -304,6 +316,7 @@ class AlpacaClient:
                                          
                 except Exception as e:
                     print(e)
+            print(f"{soldTotal} is left over from rebalance")
             self.investedAmount += totalBought 
 
         """

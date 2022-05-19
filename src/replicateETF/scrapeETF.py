@@ -231,7 +231,7 @@ class AlpacaClient:
                 if  key not in ''.join(str(e) for e in api.list_positions()):
                     print(f"{targetEquity['name']} is missing, Buy to add it")
                     continue
-                currentEquity =  api.get_position(key).market_value#self.etfTable.get(key,None)
+                currentEquity =  float(api.get_position(key).market_value)#self.etfTable.get(key,None)
                 
                 self.__updateInvestedAmount()
 
@@ -260,7 +260,7 @@ class AlpacaClient:
                 percent = targetEquity['percent']/100
                 if amountToSell <= 0 or  key not in ''.join(str(e) for e in api.list_positions()): 
                     continue
-                currentEquity = api.get_position(key).market_value #self.etfTable.get(key,None)
+                currentEquity = float(api.get_position(key).market_value) #self.etfTable.get(key,None)
 
                 # TODO - should be a separate function to enable retry logic
                 try:
@@ -299,7 +299,7 @@ class AlpacaClient:
                 if key not in ''.join(str(e) for e in api.list_positions()):
                     print(f"{targetEquity['name']} is missing, Buy to add it")
                     continue
-                currentEquity = api.get_position(key).market_value #self.etfTable.get(key,None)
+                currentEquity = float(api.get_position(key).market_value) #self.etfTable.get(key,None)
 
                 
                 self.__updateInvestedAmount();

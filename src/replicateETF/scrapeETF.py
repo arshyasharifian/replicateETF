@@ -150,7 +150,7 @@ class AlpacaClient:
             A paper account is also applicable here. In other words, this can be used for testing and does not
             require actual cash. This is important to determine whether orders can be placed.
             """
-            api = tradeapi.REST(key_id = self.api_key, secret_key=self.api_secret)
+            api = REST(self.api_key, self.api_secret,self.base_url)
             account = api.get_account()
             availableCash = account.cash
             return int(float(availableCash))
@@ -177,7 +177,7 @@ class AlpacaClient:
                     print(f"Based on the ETF, please enter a value greater than {minimumDollars} to invest.")
                     exit(0)
             #build Alpaca client
-            api = REST()
+            api = REST(self.api_key, self.api_secret,self.base_url)
             for key in etfAssetDict.keys():
                 equity = etfAssetDict[key]
                 percent = equity['percent']/100
@@ -206,7 +206,7 @@ class AlpacaClient:
             """
             myObj = ETFHandler()
             etfAssetDict = myObj.getETFTable(self.etf,filterDict)
-            api = REST()
+            api = REST(self.api_key, self.api_secret,self.base_url)
             totalBought = 0
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]
@@ -268,7 +268,7 @@ class AlpacaClient:
             soldTotal = 0
             myObj = ETFHandler()
             etfAssetDict = myObj.getETFTable(self.etf,filterDict)
-            api = REST()
+            api = REST(self.api_key, self.api_secret,self.base_url)
             totalBought = 0
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]

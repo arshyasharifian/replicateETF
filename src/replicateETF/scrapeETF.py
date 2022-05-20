@@ -325,11 +325,12 @@ class AlpacaClient:
             #self.investedAmount -= totalBought 
             #totalBought = 0
             for key in etfAssetDict.keys():
+                targetEquity = etfAssetDict[key]
                 self.__updateInvestedAmount();
                 diffPercent = currentEquity/self.investedAmount - (targetEquity['percent'])/100
                 targetBuy = (currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1)
 
-                if diffPercent >= 0 or targetBuy < 1 or soldTotal < 1:
+                if diffPercent >= 0 or targetBuy < 1 or soldTotal < 1 or targetBuy > soldTotal:
                     continue
                 
                 try:

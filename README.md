@@ -15,7 +15,7 @@ use the package defined here, please setup an Alpaca API [account](https://alpac
 As of now, The package assumes the entire account is used for etf replication so any
 additional equity added outside of package could/may be changed.
 ## Export Alpaca API Keys and Base URL
-
+[Here](https://github.com/alpacahq/alpaca-trade-api-python#alpaca-environment-variables) are the environment variables which can be set.
 This example showcases exporting the basic API keys needed to execute some of the available functions. The `BASE_URL` defined below corresponds to the paper trading for testing algorithms. There is an alternative `BASE_URL` for live trading.
 
 Example:

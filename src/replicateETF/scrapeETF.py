@@ -7,6 +7,9 @@ from selenium.webdriver.common.by import By
 from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.chrome.webdriver import WebDriver
 from math import ceil
+import random
+
+
 
 class ETFHandler:
     def __init__(self):
@@ -324,6 +327,13 @@ class AlpacaClient:
                     print(e)
             #self.investedAmount -= totalBought 
             #totalBought = 0
+            keys = list(etfAssetDict.keys())
+            random.shuffle(keys)
+
+            shuffledEtfAssetDict = dict()
+            for key in keys:
+                shuffledEtfAssetDict.update({key: etfAssetDict[key]})
+            etfAssetDict = shuffledEtfAssetDict
             for key in etfAssetDict.keys():
                 targetEquity = etfAssetDict[key]
                 self.__updateInvestedAmount();

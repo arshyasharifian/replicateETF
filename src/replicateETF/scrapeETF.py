@@ -197,7 +197,7 @@ class AlpacaClient:
             for key in etfAssetDict.keys():
                 equity = etfAssetDict[key]
                 percent = equity['percent']/100
-                # TODO - should be a separate function to enable retry logic
+                
                 try:
                     orderResponse=api.submit_order(symbol=key, 
                                     notional=investmentAmount*percent, 
@@ -242,7 +242,7 @@ class AlpacaClient:
                     continue
                 
                 
-                # TODO - should be a separate function to enable retry logic
+                
                 try:
                     orderResponse=api.submit_order(symbol=key, 
                                     notional=targetSell, 
@@ -311,7 +311,7 @@ class AlpacaClient:
                     continue
                 
                 
-                # TODO - should be a separate function to enable retry logic
+                
                 try:
                     orderResponse=api.submit_order(symbol=key, 
                                     notional=targetSell, 
@@ -331,7 +331,7 @@ class AlpacaClient:
 
                 if diffPercent >= 0 or targetBuy < 1 or soldTotal < 1:
                     continue
-                # TODO - should be a separate function to enable retry logic
+                
                 try:
                     orderResponse=api.submit_order(symbol=key, 
                                     notional=targetBuy, 

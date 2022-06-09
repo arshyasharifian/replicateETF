@@ -242,6 +242,7 @@ class AlpacaClient:
                 
                 targetSell = abs((currentEquity - self.investedAmount * (targetEquity['percent']/100) )/((targetEquity['percent']/100)-1))
                 if diffPercent <= 0 or targetSell > amountToSell or amountToSell <= 0 :
+                    #move the sell from each holding here and delete continue
                     continue
                 
                 

@@ -1,16 +1,16 @@
-from replicateETF.scrapeETF import ETFHandler
+from replicateETF.scrapeETF import ETFHandler,AlpacaClient
 from alpaca_trade_api.rest import REST
 
 # it is optional to add api key and secret here or export the keys
 myObj = ETFHandler()
-symbol = "VOO"
+client = AlpacaClient("VOO")
 etfAssetDict = myObj.getETFTable(symbol)
 
 # identify the mimimum amount of purchasing power to build ETF
-minimumDollars = myObj.getMimimumDollars(symbol)
+minimumDollars = myObj.getMinimumDollars(symbol)
 
 # determine whether available cash enough to build ETF
-if myObj.getAvailableCash() < minimumDollars:
+if client.getAvailableCash() < minimumDollars:
     print ("Insufficient fund to build ETF")
 else:
     investmentAmount = -1
